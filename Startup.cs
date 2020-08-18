@@ -3,6 +3,7 @@ using System.Net;
 using System.IO;
 using System.Collections.Generic;
 using System.Linq;
+using System.Web;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -56,82 +57,74 @@ namespace first_server_dn
             what = tempWhat.Split("/*/");
             return what;
         }
-        public string GetHeaderInfo(string host)
+        public string GetHeaderInfo(string [] hosts)
         {
             long ellapledTicks = DateTime.Now.Ticks;
-
             string[] who = {}; 
+            string[] how = {};
+            string[] does = {};
+            string[] what = {};
             var thread1 = new Thread(
                 () =>
                 {
-                    who = Who(host);
+                    who = Who(RandomElement(hosts));
                 });
             thread1.Start();
-            thread1.Join();
-           
 
-            string[] how = {};
             var thread2 = new Thread(
                 () =>
                 {
-                    how = How(host);
+                    how = How(RandomElement(hosts));
                 });
             thread2.Start();
-            thread2.Join();
 
-
-            string[] does = {};
             var thread3 = new Thread(
                 () =>
                 {
-                    does = Does(host);
+                    does = Does(RandomElement(hosts));
                 });
             thread3.Start();
-            thread3.Join();
 
-
-            string[] what = What(host);
             var thread4 = new Thread(
                 () =>
                 {
-                    what = What(host);
+                    what = What(RandomElement(hosts));
                 });
             thread4.Start();
             thread4.Join();
 
-
             string result = "";
 
             result += who[0] + " " + how[0] + " " + does[0] + " " + what[0] + "\n";
 
-            result += who[0] + " Received from: " + who[1] + "\n";
-            result += how[0] + " Received from: " + how[1] + "\n";
-            result += does[0] + " Received from: " + does[1] + "\n";
-            result += what[0] + " Received from: " + what[1] + "\n";
+            result += who[0] + " Gived from: " + who[1] + "\n";
+            result += how[0] + " Gived from: " + how[1] + "\n";
+            result += does[0] + " Gived from: " + does[1] + "\n";
+            result += what[0] + " Gived from: " + what[1] + "\n";
             ellapledTicks = DateTime.Now.Ticks - ellapledTicks;
             result += ellapledTicks;
-
+            
             return result;
         }
 
-        public string GetHeaderInfo2(string host)
+        public string GetHeaderInfo2(string[] hosts)
         {
             long ellapledTicks = DateTime.Now.Ticks;
-            string[] who = Who(host);            
+            string[] who = Who(RandomElement(hosts));            
 
-            string[] how = How(host);
+            string[] how = How(RandomElement(hosts));
 
-            string[] does = Does(host);
+            string[] does = Does(RandomElement(hosts));
 
-            string[] what = What(host);
+            string[] what = What(RandomElement(hosts));
 
             string result = "";
             result += who[0] + " " + how[0] + " " + does[0] + " " + what[0] + "\n";
 
-            result += who[0] + " Received from: " + who[1] + "\n";
-            result += how[0] + " Received from: " + how[1] + "\n";
-            result += does[0] + " Received from: " + does[1] + "\n";
-            result += what[0] + " Received from: " + what[1] + "\n";
+            result += who[0] + " Gived from: " + who[1] + "\n";
+            result += how[0] + " Gived from: " + how[1] + "\n";
+            result += does[0] + " Gived from: " + does[1] + "\n";
+            result += what[0] + " Gived from: " + what[1] + "\n";
             ellapledTicks = DateTime.Now.Ticks - ellapledTicks;
             result += ellapledTicks;
             return result;
@@ -149,18 +142,27 @@ namespace first_server_dn
                 }
                 header = myRes.Headers["InCamp-Student"];
                 myRes.Close();
+            
+
             return word + "/*/" + header;
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+        // [HttpGet("incamp18-quote/{parameter}")]
+        // public string GetQuery(string parameter)
+        // {
+        //     return $"{parameter}";
+        // }
+
         public string[] who = {"Шрек", "Осёл", "Кот в сапогах"};
         public string[] how = {"ужасно", "харизматично", "по дурацки"};
         public string[] does = {"рычит", "танцует", "бьет"};
         public string[] what = {"танго", "людей", "код"};
         public string[] hosts = {"http://localhost:3000/"};
+        // , "http://feb2ec000271.ngrok.io/", "http://df1f5b98672e.ngrok.io/", "http://5b341e7ae688.ngrok.io/", "http://74334191d2b3.ngrok.io/", "http://14add9edba41.ngrok.io/"
 
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, string args)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -208,13 +210,16 @@ namespace first_server_dn
                     context.Response.Headers.Add("InCamp-Student", "ArtemYa");
                     await context.Response.WriteAsync($"{RandomElement(who)} {RandomElement(how)} {RandomElement(does)} {RandomElement(what)}");
                 });
-
+                
                 endpoints.MapGet("/incamp18-quote", async context =>
-                {
-                    Console.WriteLine(args.Length);
+                {   
                     context.Response.ContentType = "text/html; charset=utf-8";
                     context.Response.Headers.Add("InCamp-Student", "ArtemYa");
-                    await context.Response.WriteAsync(GetHeaderInfo(RandomElement(hosts)));
+                    // if(context.Request.QueryString["params"])
+                    // {
+
+                    // }
+                    await context.Response.WriteAsync(GetHeaderInfo(hosts) + "\n" + GetHeaderInfo2(hosts));
                 });
 
             });
